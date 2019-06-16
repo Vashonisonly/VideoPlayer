@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <SurfaceView
+        android:id="@+id/Suf_id"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
+    <SeekBar
+        android:id="@+id/SeekBar_id"
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp">
+
+        <TextView
+            android:id="@+id/curTime_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/fenhao_id"
+            android:layout_weight="1"
+            android:text="00:00"
+            />
+        <TextView
+            android:id="@+id/fenhao_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/maxTime_id"
+            android:layout_weight="1"
+            android:text="/"
+            />
+        <TextView
+            android:id="@+id/maxTime_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_weight="1"
+            android:text="00:00"
+            />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/LL2_id"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/playBtn_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="播放"/>
+
+        <Button
+            android:id="@+id/pause_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="暂停"/>
+
+        <Button
+            android:id="@+id/rePlayBtn_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="重播"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>
