@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -65,7 +66,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
             case R.id.playBtn_id:
                 mediaPlayer.start();
                 mediaPlayer.seekTo(currentPosition);
-                seekBar.setMax(mediaPlayer.getDuration());
 
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -83,7 +83,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
                             runOnUiThread(updateUI);
                         }
                     }
-                }, 0, 50);
+                }, 0, 3000);//时间间隔一般要求小一点
                 playBtn.setEnabled(false);
                 break;
             case R.id.pause_id:
@@ -103,23 +103,29 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mediaPlayer.setDisplay(surfaceHolder);
         mediaPlayer.setLooping(true);
+        seekBar.setMax(mediaPlayer.getDuration());
         maxTime.setText(format.format(mediaPlayer.getDuration()) + "");
     }
 
     public class SeekBarParse implements SeekBar.OnSeekBarChangeListener{
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
 
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+            isSeekBarChanging = true;
+            mediaPlayer.seekTo(seekBar.getProgress());
+            isSeekBarChanging = false;
         }
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
-            isSeekBarChanging = true;
+
+            //isSeekBarChanging = true;
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-            isSeekBarChanging = false;
-            mediaPlayer.seekTo(seekBar.getProgress());
+           // mediaPlayer.seekTo(seekBar.getProgress());
+           // isSeekBarChanging = false;
         }
 
 
