@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -8,76 +8,82 @@
     <SurfaceView
         android:id="@+id/Suf_id"
         android:layout_width="match_parent"
-        android:layout_height="300dp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="10dp" />
-
-    <SeekBar
-        android:id="@+id/SeekBar_id"
-        android:layout_width="match_parent"
-        android:layout_height="20dp" />
+        android:layout_height="480dp" />
 
     <RelativeLayout
+        android:id="@+id/control_id"
         android:layout_width="match_parent"
-        android:layout_height="20dp">
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/Suf_id">
+
+        <RelativeLayout
+            android:id="@+id/process_id"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true">
+
+            <ImageButton
+                android:id="@+id/playBtn_id"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="40dp"
+                android:text="播放"/>
 
         <TextView
             android:id="@+id/curTime_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/fenhao_id"
-            android:layout_weight="1"
+            android:layout_toRightOf="@id/playBtn_id"
+            android:layout_centerVertical="true"
             android:text="00:00"
+            android:textColor="@color/colorAccent"
             />
         <TextView
             android:id="@+id/fenhao_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/maxTime_id"
-            android:layout_weight="1"
+            android:layout_toRightOf="@id/curTime_id"
+            android:layout_centerVertical="true"
             android:text="/"
+            android:textColor="@color/colorAccent"
             />
         <TextView
             android:id="@+id/maxTime_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_weight="1"
+            android:layout_toRightOf="@id/fenhao_id"
+            android:layout_centerVertical="true"
             android:text="00:00"
+            android:textColor="@color/colorAccent"
             />
 
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/LL2_id"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/playBtn_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+        <ImageButton
+            android:id="@+id/scale_id"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="20dp"
             android:text="播放"/>
 
-        <Button
-            android:id="@+id/pause_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="暂停"/>
-
-        <Button
-            android:id="@+id/rePlayBtn_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="重播"/>
-
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/speed_id"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_toLeftOf="@id/scale_id"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="20dp"
+            android:text="播放"/>
 
 
-</LinearLayout>
+    </RelativeLayout>
+    <SeekBar
+        android:id="@+id/SeekBar_id"
+        android:layout_above="@+id/process_id"
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
+    </RelativeLayout>
+</RelativeLayout>

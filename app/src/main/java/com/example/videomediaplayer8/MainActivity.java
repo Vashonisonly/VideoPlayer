@@ -8,7 +8,10 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -24,9 +27,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
     //视频播放视图
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
-    private Button playBtn, pauseBtn, rePlayBtn;
+    private ImageButton playBtn, speedBtn, scaleBtn;
     private TextView maxTime, curTime;
     private SeekBar seekBar;
+    private RelativeLayout rlControl;
     private Format format = new SimpleDateFormat("mm:ss");
     //定时器，统计运行时间
     private Timer timer;
@@ -38,35 +42,38 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         bindViews();
+
     }
 
     private void bindViews() {
         surfaceView = findViewById(R.id.Suf_id);
         playBtn = findViewById(R.id.playBtn_id);
-        pauseBtn = findViewById(R.id.pause_id);
-        rePlayBtn = findViewById(R.id.rePlayBtn_id);
+        speedBtn = findViewById(R.id.speed_id);
+        scaleBtn = findViewById(R.id.scale_id);
         seekBar = findViewById(R.id.SeekBar_id);
         seekBar.setOnSeekBarChangeListener(new SeekBarParse());
         curTime = findViewById(R.id.curTime_id);
         maxTime = findViewById(R.id.maxTime_id);
-
-        playBtn.setOnClickListener(this);
-        pauseBtn.setOnClickListener(this);
-        rePlayBtn.setOnClickListener(this);
+        rlControl = findViewById(R.id.control_id);
 
         //surfaceHolder类可认为是surface类的控制器
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         //surfaceHolder.setFixedSize(1080,350);
+
+        playBtn.setOnClickListener(this);
+        surfaceView.setOnClickListener(this);
+        speedBtn.setOnClickListener(this);
+        scaleBtn.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.playBtn_id:
+                Log.d("MyVideo","click beginBtn");
                 mediaPlayer.start();
                 mediaPlayer.seekTo(currentPosition);
-
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
                     Runnable updateUI = new Runnable() {
@@ -86,13 +93,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
                 }, 0, 3000);//时间间隔一般要求小一点
                 playBtn.setEnabled(false);
                 break;
-            case R.id.pause_id:
-                mediaPlayer.pause();
-                playBtn.setEnabled(true);
+            case R.id.Suf_id:
+                Log.d("MyVideo","click video");
+                if(rlControl.getVisibility() == View.GONE){
+                    rlControl.setVisibility(View.VISIBLE);
+                }else{
+                    rlControl.setVisibility(View.GONE);
+                }
                 break;
-            case R.id.rePlayBtn_id:
-                mediaPlayer.seekTo(0);
-                break;
+            case R.id.speed_id:
+            case R.id.scale_id:
+                Log.d("MyVideo","click scale_btn");
+
         }
 
     }
@@ -127,7 +139,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
            // mediaPlayer.seekTo(seekBar.getProgress());
            // isSeekBarChanging = false;
         }
-
 
     }
     @Override
