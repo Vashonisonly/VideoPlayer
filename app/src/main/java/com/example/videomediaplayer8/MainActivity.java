@@ -1,10 +1,17 @@
 package com.example.videomediaplayer8;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -17,129 +24,264 @@ import android.widget.TextView;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends Activity implements View.OnClickListener, SurfaceHolder.Callback {
 
+public class MainActivity extends Activity implements SurfaceHolder.Callback {
+
+    public static final int SEEKBARUPDATE = 1;
+    public static final int SEEKVIDEO = 2;
+
+
+    Handler mHandler = new MyHandler();
     private MediaPlayer mediaPlayer;
+    private PlaybackParams playbackParams;
     //视频播放视图
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
-    private ImageButton playBtn, speedBtn, scaleBtn;
-    private TextView maxTime, curTime;
+    private TextView maxTime, curTime, infoText;
     private SeekBar seekBar;
     private RelativeLayout rlControl;
     private Format format = new SimpleDateFormat("mm:ss");
     //定时器，统计运行时间
     private Timer timer;
-    private int currentPosition = 0;//当前播放进度
-    private boolean isSeekBarChanging = false;
+    private MyTimeTask myTimeTask;
+
+    private int currentPosition = 0;
+    private int duration = 0;
+
+    float speeds[]={0.5f,1.0f,1.5f,2.0f,4.0f};
+    int speedIndex = 1;
+
+    Point fixSize;//存储原始屏幕大小
+    private boolean fullScreen = false;
+    private boolean controlsHide = false;
+
+    DisplayMetrics disPlay = new DisplayMetrics();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindowManager().getDefaultDisplay().getMetrics(disPlay);
         bindViews();
-
     }
 
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        fixSize = new Point(surfaceView.getWidth(),surfaceView.getHeight());
+
+        //设置媒体资源
+        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.test);
+
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mediaPlayer.setDisplay(surfaceHolder);
+
+        mediaPlayer.setLooping(true);
+
+        //设置倍速
+        playbackParams = mediaPlayer.getPlaybackParams();
+        playbackParams.setSpeed(speeds[speedIndex]);
+        mediaPlayer.setPlaybackParams(playbackParams);
+
+        seekBar.setMax(100);
+        duration = mediaPlayer.getDuration();
+
+        //线程刷新UI
+        timer = new Timer();
+        myTimeTask = new MyTimeTask();
+        myTimeTask.setSpeed(duration/100);
+        timer.schedule(myTimeTask,50,50);
+        maxTime.setText(format.format(duration) + "");
+    }
+
+
     private void bindViews() {
+        Log.d("MyVideo", "View Size: ");
         surfaceView = findViewById(R.id.Suf_id);
-        playBtn = findViewById(R.id.playBtn_id);
-        speedBtn = findViewById(R.id.speed_id);
-        scaleBtn = findViewById(R.id.scale_id);
         seekBar = findViewById(R.id.SeekBar_id);
-        seekBar.setOnSeekBarChangeListener(new SeekBarParse());
+        seekBar.setFocusable(false);
         curTime = findViewById(R.id.curTime_id);
         maxTime = findViewById(R.id.maxTime_id);
+        infoText = findViewById(R.id.info_id);
         rlControl = findViewById(R.id.control_id);
 
         //surfaceHolder类可认为是surface类的控制器
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
-        //surfaceHolder.setFixedSize(1080,350);
 
-        playBtn.setOnClickListener(this);
-        surfaceView.setOnClickListener(this);
-        speedBtn.setOnClickListener(this);
-        scaleBtn.setOnClickListener(this);
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.playBtn_id:
-                Log.d("MyVideo","click beginBtn");
-                mediaPlayer.start();
-                mediaPlayer.seekTo(currentPosition);
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    Runnable updateUI = new Runnable() {
-                        @Override
-                        public void run() {
-                            curTime.setText(format.format(mediaPlayer.getCurrentPosition()) + "");
-                            currentPosition = mediaPlayer.getCurrentPosition();
-                        }
-                    };
-                    @Override
-                    public void run() {
-                        if (!isSeekBarChanging) {
-                            seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                            runOnUiThread(updateUI);
-                        }
-                    }
-                }, 0, 3000);//时间间隔一般要求小一点
-                playBtn.setEnabled(false);
-                break;
-            case R.id.Suf_id:
-                Log.d("MyVideo","click video");
-                if(rlControl.getVisibility() == View.GONE){
-                    rlControl.setVisibility(View.VISIBLE);
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+
+        Log.d("MyVideo","keyDown: "+keyCode);
+        switch (keyCode){
+            case KeyEvent.KEYCODE_5:
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+                if(mediaPlayer.isPlaying()){
+                    mediaPlayer.pause();
+                    infoText.setText("暂停");
                 }else{
-                    rlControl.setVisibility(View.GONE);
+                    mediaPlayer.start();
+                    infoText.setText("播放");
                 }
                 break;
-            case R.id.speed_id:
-            case R.id.scale_id:
-                Log.d("MyVideo","click scale_btn");
+                //向右快进
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                Log.d("MyVideo","parse down right");
+                myTimeTask.setSpeedDirection(1);
+                infoText.setText("快进");
+                break;
+                //向左快退
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                myTimeTask.setSpeedDirection(-1);
+                infoText.setText("快退");
+                break;
 
+            case KeyEvent.KEYCODE_1:
+                if(++speedIndex >= 5){
+                    speedIndex = 0;
+                }
+                if(mediaPlayer == null){
+                    return false;
+                }
+                Log.d("MyVideo","the speedIndex is: "+speedIndex);
+                playbackParams.setSpeed(speeds[speedIndex]);
+                mediaPlayer.setPlaybackParams(playbackParams);
+                infoText.setText("X"+speeds[speedIndex]);
+                break;
+            case KeyEvent.KEYCODE_2:
+                Log.d("MyVideo","parse 2 ");
+                if(!fullScreen){
+                    //全屏
+                    RelativeLayout.LayoutParams layoutParams=
+                            new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    surfaceView.setLayoutParams(layoutParams);
+                    fullScreen = true;
+                    infoText.setText("全屏");
+                }else {
+                    RelativeLayout.LayoutParams lp=new  RelativeLayout.LayoutParams(fixSize.x, fixSize.y);
+                    lp.addRule(RelativeLayout.CENTER_IN_PARENT);
+                    surfaceView.setLayoutParams(lp);
+                    fullScreen = false;//改变全屏/窗口的标记
+                    infoText.setText("小屏");
+                }
+                break;
+            case KeyEvent.KEYCODE_3:
+                if(!controlsHide){
+                    rlControl.setVisibility(View.GONE);
+                    infoText.setVisibility(View.GONE);
+                    controlsHide = true;
+                }else{
+                    rlControl.setVisibility(View.VISIBLE);
+                    infoText.setVisibility(View.VISIBLE);
+                    controlsHide = false;
+                }
+                break;
+//            case KeyEvent.KEYCODE_BACK:
+//                break;
         }
-
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.test);
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setDisplay(surfaceHolder);
-        mediaPlayer.setLooping(true);
-        seekBar.setMax(mediaPlayer.getDuration());
-        maxTime.setText(format.format(mediaPlayer.getDuration()) + "");
+    public boolean onKeyUp(int keyCode, KeyEvent event){
+
+        Log.d("MyVideo","keyUp: "+keyCode);
+        switch (keyCode){
+
+            //向右快进
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                myTimeTask.setSpeedDirection(0);
+                break;
+            //向左快退
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                Log.d("MyVideo","keyDown: "+keyCode);
+                myTimeTask.setSpeedDirection(0);
+                break;
+            case KeyEvent.KEYCODE_BACK:
+                break;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
-    public class SeekBarParse implements SeekBar.OnSeekBarChangeListener{
 
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
-            isSeekBarChanging = true;
-            mediaPlayer.seekTo(seekBar.getProgress());
-            isSeekBarChanging = false;
+    public void onSeekBarChanged(int currentPosition, int duration,boolean needSeek){
+        if(needSeek){
+            mediaPlayer.seekTo(currentPosition);
+        }
+            Log.d("MyVideo","currentPosition: "+currentPosition);
+            seekBar.setProgress(currentPosition*100/duration);
+
+        curTime.setText(format.format(currentPosition));
+    }
+
+    private class MyTimeTask extends TimerTask{
+
+        private int speed = 1;
+        private int speedDirection = 0;
+
+        public void setSpeedDirection(int speedDirection1){
+            Log.d("MyVideo","speedDirection is: "+speedDirection1);
+            speedDirection = speedDirection1;
+        }
+        public void setSpeed(int speed1){
+            Log.d("MyVideo","speed is: "+speed1);
+            speed = speed1;
         }
 
         @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
+        public void run(){
+            if(!mediaPlayer.isPlaying()){
+                return;
+            }
+            Log.d("MyVideo","speed is: "+speed+ " speedDir: "+ speedDirection);
+            currentPosition = mediaPlayer.getCurrentPosition() + speed*speedDirection;
+            if(currentPosition < 0) currentPosition = 0;
+            if(currentPosition > duration) currentPosition = duration;
 
-            //isSeekBarChanging = true;
+            Message seekMsg = new Message();
+            if(speedDirection == 0){
+                seekMsg.what = SEEKBARUPDATE;
+                seekMsg.arg1 = currentPosition;
+                seekMsg.arg2 = duration;
+            }else{
+                seekMsg.what = SEEKVIDEO;
+                seekMsg.arg1 = currentPosition;
+                seekMsg.arg2 = duration;
+            }
+            mHandler.sendMessage(seekMsg);
         }
+    }
 
+    private class MyHandler extends Handler{
+        int currentPosition = 0;
+        int duration = 0;
         @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-           // mediaPlayer.seekTo(seekBar.getProgress());
-           // isSeekBarChanging = false;
+        public void handleMessage(Message msg){
+         switch (msg.what){
+             case SEEKBARUPDATE:
+                 currentPosition = msg.arg1;
+                 duration = msg.arg2;
+                 onSeekBarChanged(currentPosition, duration,false);
+                 break;
+             case SEEKVIDEO:
+                 currentPosition = msg.arg1;
+                 duration = msg.arg2;
+                 onSeekBarChanged(currentPosition,duration,true);
+                 break;
+         }
         }
-
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int heigth) {
@@ -153,10 +295,11 @@ public class MainActivity extends Activity implements View.OnClickListener, Surf
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        myTimeTask.cancel();
         if (mediaPlayer.isPlaying() && mediaPlayer != null) {
             mediaPlayer.stop();
         }
         mediaPlayer.release();
+        super.onDestroy();
     }
 }

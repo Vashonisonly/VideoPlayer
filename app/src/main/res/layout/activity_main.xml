@@ -2,40 +2,43 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:layout_centerInParent="true"
+    android:scaleType="fitXY">
 
     <SurfaceView
         android:id="@+id/Suf_id"
         android:layout_width="match_parent"
         android:layout_height="480dp" />
 
+    <TextView
+        android:id="@+id/info_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="50dp"
+        android:textColor="@color/colorAccent"
+        android:layout_centerInParent="true"
+        />
+
     <RelativeLayout
         android:id="@+id/control_id"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_alignBottom="@id/Suf_id">
 
-        <RelativeLayout
-            android:id="@+id/process_id"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_alignParentBottom="true">
-
-            <ImageButton
-                android:id="@+id/playBtn_id"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_alignParentLeft="true"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="40dp"
-                android:text="播放"/>
+            <!--<ImageButton-->
+                <!--android:id="@+id/playBtn_id"-->
+                <!--android:layout_width="30dp"-->
+                <!--android:layout_height="30dp"-->
+                <!--android:layout_alignParentLeft="true"-->
+                <!--android:layout_marginLeft="20dp"-->
+                <!--android:layout_marginRight="40dp"-->
+                <!--android:text="播/>-->
 
         <TextView
             android:id="@+id/curTime_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/playBtn_id"
+            android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:text="00:00"
             android:textColor="@color/colorAccent"
@@ -58,32 +61,30 @@
             android:text="00:00"
             android:textColor="@color/colorAccent"
             />
+        <SeekBar
+             android:id="@+id/SeekBar_id"
+             android:layout_toRightOf="@+id/maxTime_id"
+             android:layout_width="match_parent"
+             android:layout_height="20dp"
+             android:layout_centerVertical="true"/>
 
-        <ImageButton
-            android:id="@+id/scale_id"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="20dp"
-            android:text="播放"/>
+        <!--<ImageButton-->
+            <!--android:id="@+id/scale_id"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_marginLeft="40dp"-->
+            <!--android:layout_marginRight="20dp"-->
+            <!--android:text="播放"/>-->
 
-        <ImageButton
-            android:id="@+id/speed_id"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_toLeftOf="@id/scale_id"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="20dp"
-            android:text="播放"/>
-
-
-    </RelativeLayout>
-    <SeekBar
-        android:id="@+id/SeekBar_id"
-        android:layout_above="@+id/process_id"
-        android:layout_width="match_parent"
-        android:layout_height="20dp" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/speed_id"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_toLeftOf="@id/scale_id"-->
+            <!--android:layout_marginLeft="40dp"-->
+            <!--android:layout_marginRight="20dp"-->
+            <!--android:text="播放"/>-->
 
     </RelativeLayout>
 </RelativeLayout>
