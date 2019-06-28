@@ -10,21 +10,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,6 +47,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private int currentPosition = 0;
     private int duration = 0;
+    private float volume =0.3f;
 
     float speeds[]={0.5f,1.0f,1.5f,2.0f,4.0f};
     int speedIndex = 1;
@@ -81,6 +77,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mediaPlayer.setDisplay(surfaceHolder);
+        mediaPlayer.setVolume(volume,volume);
 
         mediaPlayer.setLooping(true);
 
@@ -145,17 +142,23 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                 break;
 
             case KeyEvent.KEYCODE_1:
-                if(++speedIndex >= 5){
-                    speedIndex = 0;
+                try {
+                    if(++speedIndex >= 5){
+                        speedIndex = 0;
+                    }
+                    if(mediaPlayer == null){
+                        return false;
+                    }
+                    Log.d("MyVideo","the speedIndex is: "+speedIndex);
+                    playbackParams.setSpeed(speeds[speedIndex]);
+                    mediaPlayer.setPlaybackParams(playbackParams);
+                    infoText.setText("X"+speeds[speedIndex]);
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    Log.d("MyVideo","Exception in MessageQueue callback: handleReceiveCallback"+e);
                 }
-                if(mediaPlayer == null){
-                    return false;
-                }
-                Log.d("MyVideo","the speedIndex is: "+speedIndex);
-                playbackParams.setSpeed(speeds[speedIndex]);
-                mediaPlayer.setPlaybackParams(playbackParams);
-                infoText.setText("X"+speeds[speedIndex]);
                 break;
+
             case KeyEvent.KEYCODE_2:
                 Log.d("MyVideo","parse 2 ");
                 if(!fullScreen){
@@ -188,6 +191,26 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
                     controlsHide = false;
                 }
                 break;
+            case KeyEvent.KEYCODE_4:
+                volume+=0.01f;
+                if(volume > 1.0f){
+                    volume = 1.0f;
+                }
+                mediaPlayer.setVolume(volume,volume);
+                infoText.setText("音量+："+(int)(volume*100));
+                break;
+            case KeyEvent.KEYCODE_7:
+                volume-=0.01f;
+                if(volume <= 0.0f){
+                    volume = 0.0f;
+                }
+                mediaPlayer.setVolume(volume,volume);
+                infoText.setText("音量+："+(int)(volume*100));
+                break;
+            case KeyEvent.KEYCODE_0:
+                volume = 0.0f;
+                mediaPlayer.setVolume(volume,volume);
+                infoText.setText("音量：X");
 //            case KeyEvent.KEYCODE_BACK:
 //                break;
         }
@@ -232,11 +255,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
         private int speedDirection = 0;
 
         public void setSpeedDirection(int speedDirection1){
-            Log.d("MyVideo","speedDirection is: "+speedDirection1);
             speedDirection = speedDirection1;
         }
         public void setSpeed(int speed1){
-            Log.d("MyVideo","speed is: "+speed1);
             speed = speed1;
         }
 
